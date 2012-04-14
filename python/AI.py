@@ -22,12 +22,17 @@ class AI(BaseAI):
     pass
 
   def spawnShips(self):
+    types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reversed=True)
+    types = [i for i in types if i.type not in ["Support", "EMP", "Mine Layer"] ] #It's complicated
+    cheapest = min(i.cost for i in types)
     #Warp in some ships
-    for shipType in self.shipTypes:
-      #If you have enough energy to warp in this type of ship
-      if shipType.cost <= self.players[self.playerID].energy:
-        #Warp it in directly on top of your warp gate
-        shipType.warpIn(self.myGate.x,self.myGate.y)
+    while self.players[self.playerID].energy >= cheapest:
+      for shipType in types:
+        #If you have enough energy to warp in this type of ship
+        if shipType.cost <= self.players[self.playerID].energy:
+          #Warp it in directly on top of your warp gate
+          shipType.warpIn(self.myGate.x,self.myGate.y)
+          break
 
   def controlShips(self):
     for ship in self.ships:
