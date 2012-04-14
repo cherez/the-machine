@@ -14,6 +14,7 @@ class AI(BaseAI):
 
   ##This function is called once, before your first turn
   def init(self):
+    self.targetList = []
     pass
 
   ##This function is called once, after your last turn
@@ -33,22 +34,34 @@ class AI(BaseAI):
       #If you own this ship, it can move, and it can attack
       if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
         #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
+        self.shootShips(ship)
         x, y = self.pointOnLine(ship.x, ship.y, self.theirGate.x, self.theirGate.y, ship.movementLeft)
         #If I have move to get there
         if ship.x != x or ship.y != y:
           ship.move(x, y)
         #If the distance from my ship to their warp gate is less than my ships attack range plus their gate's radius
-        if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) <= ship.range + self.theirGate.radius:
-          #If their warp gate is still alive
-          if self.theirGate.health > 0:
-            ship.attack(self.theirGate)
+        self.shootShips(ship)
+
+  def shootShips(self, ship):
+    if ship.attacksleft <= 0:
+      return
+    for target in self.targetList:
+      if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
+        if ship.attacksLeft > 0:
+          ship.attack(target)
+          if ship.attacksLeft <= 0:
+            return
 
   ##This function is called each time it is your turn
   ##Return true to end your turn, return false to ask the server for updated information
   def run(self):
     print "Starting turn %i of round %i"%(self.turnNumber, self.roundNumber)
     #Find each player's warp gate
+    self.targetList = []
     for ship in self.ships:
+      #if this ship is an enemy, add it to the hitlist
+      if ship.owner != self.playerID:
+        self.targetList += [ship]
       #if this ship is of type Warp Gate
       if ship.type == "Warp Gate":
         #if you own this ship
