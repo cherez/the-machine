@@ -6,11 +6,11 @@ class AI(BaseAI):
   """The class implementing gameplay logic."""
   @staticmethod
   def username():
-    return "Shell AI"
+    return "the-machine"
 
   @staticmethod
   def password():
-    return "password"
+    return "YXBTUZ"
 
   ##This function is called once, before your first turn
   def init(self):
@@ -33,14 +33,14 @@ class AI(BaseAI):
           myGate = ship
         else:
           theirGate = ship
-     
+
      #Warp in some ships
     for shipType in self.shipTypes:
       #If you have enough energy to warp in this type of ship
       if shipType.cost <= self.players[self.playerID].energy:
         #Warp it in directly on top of your warp gate
         shipType.warpIn(myGate.x,myGate.y)
-    
+
     #Command your ships
     for ship in self.ships:
       #If you own this ship, it can move, and it can attack
