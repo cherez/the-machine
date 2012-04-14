@@ -1,0 +1,76 @@
+h1. MegaMinerAI 9: Space Rules and Guide
+
+h2. BaseAI
+The BaseAI class contains all of the basic functions for an AI, as well as the lists of all of the
+game objects. The AI class inherits all of the BaseAI functions and lists of game objects.
+
+h2. Players
+The Player object stores all of the general information about a player, such as their team name,
+their player ID, etc.
+
+h2. ShipsTypes
+There are a total of 10 spawnable shipTypes and 2 non-spawnable shipTypes, they are the following:
+* Spawnable: Battleship, Bomber, Cruiser, EMP, Interceptor, Juggernaut, Mine Layer, Stealth, Support, and Weapons Platform
+* Non-spawnable: Warpgate and Mine
+4 different types of ships available each round
+A shipTypes warpIn function is used to crate a new ship of that type
+Shiptypes also contain the base stats for the ship they will produce
+A spawnable ship is one that can be added to the game with the warpIn function
+A warpGate is non spawnable because you only get one warp gate, protect it.
+A mine is non-spawnable because they can only be made by mine layers. 
+
+h2. Ships
+The primary object for the game of space
+* Ships are represented by a circle defined by the center coordinate (x,y) and a radius
+* Ships can move, attack, and self-destruct
+** Ships can move anywhere on the map as long as no part of the ship exceeds the bounds of the map
+*** You CAN stack on top of friendly and enemy ships with no conflict
+** Ships can attack any enemy as long as they have attacks left and the distance to the edge of the enemy ship is less than or equal to the attacking ships range
+** Ships can self-destruct at any time. Doing so will hit all enemy units that clip its radius for its self-destruct damage
+
+h2. Energy
+Energy is the only resource for Space. Each player begins with 50 energy and use it to buy the various units in the game. 
+* Players will replenish their energy between each round
+
+h2. Warpgates
+The warp gate is the only ship each player starts with and is responsible for spawning all other ships.
+* If your warpgate dies you lose the round 
+
+h2. WarpIn
+This is the primary function for ShipTypes. This is what allows a types of unit to actually become a usable ship in space.
+* A newly spawned ship must be completly encapsulated by the Warpgate's radius
+* When a ShipType uses its warpIn, the cost of that shipType is taken away from the player's energy
+
+h2. The Map
+The map for Space, unlike with previous competitions, is not tile based and is a circular map
+* The map has a center at (0,0) and a radius of 500
+* X positive is to the right and Y positive is up
+* Ships must stay entirely inside the radius of the map
+
+h2. Rounds
+The game will go until one player has won 5 rounds of combat
+A round ends when one player has a 100% certainty of victory or when 100 turns have passed
+Each round the player has their energy restored, and are given a single Warpgate again
+Which side of the map you spawn on and which player goes first may be swapped during this time
+Turn number is reset to 0 at the beginning of each round
+Time remaining until a timeout is also reset between rounds
+
+h2. Round Victory Conditions
+* Destroy the enemy warpgate
+* If no warpgates were destroyed, whoever's warpgate has more health at the end of turn 100 wins the round
+* If warpgates have the same health, whoever has the greater army value left wins the round
+* If all of the above conditions are equal then the round is a draw and both players receive a victory
+
+h2. Game Victory
+* The first player to win 5 rounds is the game victor
+* If two players reach 5 victories at the same time (via a tie) an additional round will be played
+** If this additional round is also a tie then the overall result for the game is a tie
+
+Victory Conditions: 
+* Destroy the enemy warpgate
+* If no warpgates were destroyed, whoever's warpgate has more health at the end of turn 100 wins the round
+* If warpgates have the same health, whoever has the greater army value left wins the round
+* If all of the above conditions are equal then the round is a draw and both players receive a victory
+
+
+
