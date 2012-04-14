@@ -1,1 +1,4 @@
-YOU DIDN'T PICK A LANGUAGE
+all:
+	make -C python/ all
+clean:
+	make -C python/ all
