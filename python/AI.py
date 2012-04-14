@@ -1,6 +1,10 @@
 #-*-python-*-
 from BaseAI import BaseAI
 from GameObject import *
+from collections import defaultdict
+shipPriorities = defaultdict(lambda: 100)
+shipPriorities['EMP'] = 1
+shipPriorities['Support'] = 2
 
 class AI(BaseAI):
   """The class implementing gameplay logic."""
@@ -50,6 +54,7 @@ class AI(BaseAI):
   def shootShips(self, ship):
     if ship.attacksLeft <= 0:
       return
+    self.targetList.sort(key= lambda s:shipPriorities[s])
     for target in self.targetList:
       if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
         if ship.attacksLeft > 0:
