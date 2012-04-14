@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
   if args.practice:
     if args.game == -1:
-      args.game = str(random.randrange(2**32))
+      args.game = str(random.randrange(2**30))
     run_practice(args.host, args.game)
   else:
     if args.game == game:
