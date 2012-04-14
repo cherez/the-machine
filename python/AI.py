@@ -22,7 +22,7 @@ class AI(BaseAI):
     pass
 
   def spawnShips(self):
-    types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reversed=True)
+    types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reverse=True)
     types = [i for i in types if i.type not in ["Support", "EMP", "Mine Layer"] ] #It's complicated
     cheapest = min(i.cost for i in types)
     #Warp in some ships
@@ -48,7 +48,7 @@ class AI(BaseAI):
         self.shootShips(ship)
 
   def shootShips(self, ship):
-    if ship.attacksleft <= 0:
+    if ship.attacksLeft <= 0:
       return
     for target in self.targetList:
       if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
