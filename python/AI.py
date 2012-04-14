@@ -21,7 +21,7 @@ class AI(BaseAI):
     pass
 
   def spawnShips(self):
-    types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost)
+    types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reversed=True)
     types = [i for i in types if i.type not in ["Support", "EMP", "Mine Layer"] ] #It's complicated
     cheapest = min(i.cost for i in types)
     #Warp in some ships
