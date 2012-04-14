@@ -21,6 +21,7 @@ class AI(BaseAI):
   def init(self):
     print 'Priority.'
     self.targetList = []
+    self.myShips = []
     pass
 
   ##This function is called once, after your last turn
@@ -41,7 +42,7 @@ class AI(BaseAI):
           break
 
   def controlShips(self):
-    for ship in self.ships:
+    for ship in self.myShips:
       #If you own this ship, it can move, and it can attack
       if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
         #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
@@ -52,6 +53,25 @@ class AI(BaseAI):
           ship.move(x, y)
         #If the distance from my ship to their warp gate is less than my ships attack range plus their gate's radius
         self.shootShips(ship)
+      #if a ship should explode, we make sure that it explodes
+      if self.shouldExplode(ship):
+        ship.selfDestruct()
+
+
+  def shouldExplode(self, ship):
+    if ship.type == 'Battleship':
+      return False
+    nobleSacrificeQuotient = 0
+    for target in self.targetList:
+      if self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius < 0:
+        if target.type == "EMP":
+          nobleSacrificeQuotient += 10
+        else:
+          nobleSacrificeQuotient += 1
+
+    if nobleSacrificeQuotient > 5:
+      return True
+    return False
 
   def shootShips(self, ship):
     if ship.attacksLeft <= 0:
@@ -72,10 +92,14 @@ class AI(BaseAI):
     print "Starting turn %i of round %i"%(self.turnNumber, self.roundNumber)
     #Find each player's warp gate
     self.targetList = []
+    self.myShips = []
     for ship in self.ships:
       #if this ship is an enemy, add it to the hitlist
       if ship.owner != self.playerID:
         self.targetList += [ship]
+      if ship.owner == self.playerID:
+        if ship.type != "WarpGate":
+          self.myShips += [ship]
       #if this ship is of type Warp Gate
       if ship.type == "Warp Gate":
         #if you own this ship
