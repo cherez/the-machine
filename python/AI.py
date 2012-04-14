@@ -5,6 +5,7 @@ from collections import defaultdict
 shipPriorities = defaultdict(lambda: 100)
 shipPriorities['EMP'] = 1
 shipPriorities['Support'] = 2
+shipPriorities['Warp Gate'] = 1000
 
 class AI(BaseAI):
   """The class implementing gameplay logic."""
@@ -18,6 +19,7 @@ class AI(BaseAI):
 
   ##This function is called once, before your first turn
   def init(self):
+    print 'Priority.'
     self.targetList = []
     pass
 
@@ -54,7 +56,9 @@ class AI(BaseAI):
   def shootShips(self, ship):
     if ship.attacksLeft <= 0:
       return
-    self.targetList.sort(key= lambda s:shipPriorities[s])
+    self.targetList.sort(key= lambda s:shipPriorities[s.type])
+    print [i.type for i in self.targetList]
+    print
     for target in self.targetList:
       if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
         if ship.attacksLeft > 0:
