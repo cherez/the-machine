@@ -172,7 +172,7 @@ class AI(BaseAI):
     explodeTotal = 0
     shootTotal = 0
     for ship in self.myShips:
-      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius + ship.movementLeft <= 0:
+      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius - ship.movementLeft <= 0:
         explodeTotal += ship.selfDestructDamage
       if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.range - ship.movementLeft <= 0:
         shootTotal += ship.damage
