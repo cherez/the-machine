@@ -69,7 +69,7 @@ class AI(BaseAI):
         if i.type == 'Mine':
           juice -= 100
         else:
-          juice += 20
+          juice += 0
     for i in self.myShips:
       if self.distance(point[0], point[1], i.x, i.y) < ship.radius + i.radius:
         juice -= 20
