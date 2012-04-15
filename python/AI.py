@@ -24,7 +24,7 @@ class AI(BaseAI):
 
   ##This function is called once, before your first turn
   def init(self):
-    print 'Point Juice'
+    print 'Cowardice'
     self.targetList = []
     self.myShips = []
     pass
@@ -62,8 +62,23 @@ class AI(BaseAI):
     kitee = min(self.targetList, key=lambda s: self.distance(kiter.x, kiter.y, s.x, s.y))
     self.flee(kiter, kitee)
 
+  def overlapJuice(self, ship, point):
+    juice = 0
+    for i in self.targetList:
+      if self.distance(point[0], point[1], i.x, i.y) < ship.radius + i.radius:
+        if i.type == 'Mine':
+          juice -= 100
+        else:
+          juice += 20
+    for i in self.myShips:
+      if self.distance(point[0], point[1], i.x, i.y) < ship.radius + i.radius:
+        juice -= 20
+
+    return juice
+
   def targetJuice(self, ship, target):
     return 1000./shipPriorities[target.type]
+
   def pointJuice(self, ship, point):
     targets = [i for i in self.targets(ship, point[0], point[1])]
     juice = 0
@@ -75,6 +90,8 @@ class AI(BaseAI):
     gateDistance = max(gateDistance, 0)
 
     juice -= gateDistance/10.
+
+    juice += self.overlapJuice(ship, point)
 
     return juice
 
