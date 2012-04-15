@@ -116,22 +116,39 @@ class AI(BaseAI):
   def shootShips(self, ship):
     if ship.attacksLeft <= 0:
       return
+    removeList = []
     for target in self.targetList:
-      if target.health > 0 and target not in ship.hasHit and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
+      if target.health > 0 and target not in ship.hasHit and self.distance(ship.x, ship.y, target.x, target.y) <= ship.range + target.radius:
         if ship.attacksLeft > 0:
           ship.attack(target)
           ship.hasHit += [target]
+          if target.health <= 0:
+            removeList += [target]
           if ship.attacksLeft <= 0:
-            return
+            break
+    for dead in removeList:
+      self.targetList.remove(dead)
 
   def seizeVictory():
     explodeTotal = 0
+    shootTotal = 0
     for ship in self.myShips:
-      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius <= 0:
+      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius + ship.movementLeft <= 0:
         explodeTotal += ship.selfDestructDamage
+      if self.distance(ship.x, ship.y, self.theirgate.x, self.theirGate.y) - self.theirGate.radius + ship.range + ship.movementLeft <= 0:
+        shootTotal += ship.damage
 
-    if explodeTotal >= self.theirGate.health:
+    if explodeTotal + shootTotal >= self.theirGate.health:
       self.players[self.playerID].talk("Seize Victory!")
+      for ship in self.myShips:
+        if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
+          #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
+          x, y = self.pointOnLine(ship.x, ship.y, self.theirGate.x, self.theirGate.y, ship.movementLeft)
+          #If I have move to get there
+          if ship.x != x or ship.y != y:
+            ship.move(x, y)
+          if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) <= ship.range + target.radius:
+            ship.attack(self.theirgate)
       for ship in self.myShips:
         ship.selfDestruct()
 
@@ -159,10 +176,10 @@ class AI(BaseAI):
 
     self.spawnShips()
 
+    self.seizeVictory()
     self.players[self.playerID].talk("Continue The Attack!")
     self.controlShips()
 
-    self.seizeVictory()
 
 
     #Command your ships
