@@ -103,7 +103,7 @@ class AI(BaseAI):
       return False
     nobleSacrificeQuotient = 0
     for target in self.targetList:
-      if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius < 0:
+      if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius <= 0:
         if target.type == "EMP":
           nobleSacrificeQuotient += 10
         else:
@@ -123,6 +123,17 @@ class AI(BaseAI):
           ship.hasHit += [target]
           if ship.attacksLeft <= 0:
             return
+
+  def seizeVictory():
+    explodeTotal = 0
+    for ship in self.myShips:
+      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius <= 0:
+        explodeTotal += ship.selfDestructDamage
+
+    if explodeTotal >= self.theirGate.health:
+      self.players[self.playerID].talk("Seize Victory!")
+      for ship in self.myShips:
+        ship.selfDestruct()
 
   ##This function is called each time it is your turn
   ##Return true to end your turn, return false to ask the server for updated information
@@ -148,7 +159,10 @@ class AI(BaseAI):
 
     self.spawnShips()
 
+    self.players[self.playerID].talk("Continue The Attack!")
     self.controlShips()
+
+    self.seizeVictory()
 
 
     #Command your ships
