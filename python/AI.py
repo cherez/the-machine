@@ -2,6 +2,8 @@
 from BaseAI import BaseAI
 from GameObject import *
 from collections import defaultdict
+from math import *
+
 shipPriorities = defaultdict(lambda: 100)
 shipPriorities['EMP'] = 1
 shipPriorities['Support'] = 2
@@ -28,6 +30,35 @@ class AI(BaseAI):
   ##This function is called once, after your last turn
   def end(self):
     pass
+
+  def moveAngle(self, x, y, angle, distance):
+    dx = int(cos(angle) * distance)
+    dy = int(sin(angle) * distance)
+    x += dx
+    y += dy
+    return x, y
+
+  def genPoints(self, x, y, distance, angles, distances):
+    for i in range(1, distances+1):
+      d = int(i * float(distance) / distances)
+      for j in range(angles):
+        angle = 2*pi * j / angles
+        yield self.moveAngle(x, y, angle, d)
+
+
+  def flee(self, kiter, kitee):
+    points = [(i[0], i[1]) for i in self.genPoints(kiter.x, kiter.y, kiter.movementLeft, 8, 2)]
+    points = [i for i in points if self.distance(0, 0, i[0], i[1]) <= 500-kiter.radius]
+    points.sort(key = lambda p: self.distance(kitee.x, kitee.y, p[0], p[1]), reverse=True)
+    point = points[0]
+
+    kiter.move(point[0], point[1])
+
+  def fleeAll(self, kiter):
+    if not self.targetList:
+      return
+    kitee = min(self.targetList, key=lambda s: self.distance(kiter.x, kiter.y, s.x, s.y))
+    self.flee(kiter, kitee)
 
   def spawnShips(self):
     types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reverse=True)
@@ -59,6 +90,7 @@ class AI(BaseAI):
       #if a ship should explode, we make sure that it explodes
       if self.shouldExplode(ship):
         ship.selfDestruct()
+    self.fleeAll(self.myGate)
 
 
   def shouldExplode(self, ship):
