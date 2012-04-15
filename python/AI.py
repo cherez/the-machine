@@ -99,7 +99,7 @@ class AI(BaseAI):
       if ship.owner != self.playerID:
         self.targetList += [ship]
       if ship.owner == self.playerID:
-        if ship.type != "WarpGate":
+        if ship.type != "Warp Gate":
           self.myShips += [ship]
       #if this ship is of type Warp Gate
       if ship.type == "Warp Gate":
