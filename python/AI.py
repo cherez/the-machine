@@ -155,17 +155,20 @@ class AI(BaseAI):
 
 
   def shouldExplode(self, ship):
-    if ship.type == 'Battleship':
+    if ship.type == 'Battleship' and ship.health > 150:
       return False
     nobleSacrificeQuotient = 0
     for target in self.targetList:
       if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius <= 0:
         if target.type == "EMP":
-          nobleSacrificeQuotient += 10
+          nobleSacrificeQuotient += 15
         else:
-          nobleSacrificeQuotient += 1
+          if target.health <= self.selfDestructDamage:
+            nobleSacrificeQuotient += target.cost
+          else:
+            nobleSacrificeQuotient += target.cost * self.selfDestructDamage / target.health
 
-    if nobleSacrificeQuotient > 5:
+    if nobleSacrificeQuotient > self.cost*2:
       return True
     return False
 
