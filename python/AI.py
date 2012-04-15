@@ -168,7 +168,7 @@ class AI(BaseAI):
           if target.health <= ship.selfDestructDamage:
             nobleSacrificeQuotient += target.cost
           else:
-            nobleSacrificeQuotient += target.cost * ship.selfDestructDamage / target.health
+            nobleSacrificeQuotient += target.cost * ship.selfDestructDamage * 1.0 / target.health
 
     if nobleSacrificeQuotient > ship.cost*2:
       return True
