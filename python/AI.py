@@ -69,7 +69,7 @@ class AI(BaseAI):
         if i.type == 'Mine':
           juice -= 100
         else:
-          juice += 20
+          juice += 0
     for i in self.myShips:
       if self.distance(point[0], point[1], i.x, i.y) < ship.radius + i.radius:
         juice -= 20
@@ -115,7 +115,7 @@ class AI(BaseAI):
 
   def targets(self, ship, x, y):
     for i in self.targetList:
-      if self.distance(x, y, i.x, i.y) <= ship.range:
+      if self.distance(x, y, i.x, i.y) <= ship.range + i.radius:
         yield i
 
   def moveShips(self):
