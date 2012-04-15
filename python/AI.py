@@ -6,6 +6,7 @@ shipPriorities = defaultdict(lambda: 100)
 shipPriorities['EMP'] = 1
 shipPriorities['Support'] = 2
 shipPriorities['Warp Gate'] = 1000
+shipPriorities['Mine'] = 9001
 
 class AI(BaseAI):
   """The class implementing gameplay logic."""
@@ -42,10 +43,12 @@ class AI(BaseAI):
           break
 
   def controlShips(self):
+    self.targetList.sort(key= lambda s:shipPriorities[s.type])
     for ship in self.myShips:
       #If you own this ship, it can move, and it can attack
       if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
         #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
+        ship.hasHit = []
         self.shootShips(ship)
         x, y = self.pointOnLine(ship.x, ship.y, self.theirGate.x, self.theirGate.y, ship.movementLeft)
         #If I have move to get there
@@ -63,7 +66,7 @@ class AI(BaseAI):
       return False
     nobleSacrificeQuotient = 0
     for target in self.targetList:
-      if self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius < 0:
+      if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius < 0:
         if target.type == "EMP":
           nobleSacrificeQuotient += 10
         else:
@@ -76,13 +79,11 @@ class AI(BaseAI):
   def shootShips(self, ship):
     if ship.attacksLeft <= 0:
       return
-    self.targetList.sort(key= lambda s:shipPriorities[s.type])
-    print [i.type for i in self.targetList]
-    print
     for target in self.targetList:
-      if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
+      if target.health > 0 and target not in ship.hasHit and self.distance(ship.x, ship.y, target.x, target.y) < ship.range + target.radius:
         if ship.attacksLeft > 0:
           ship.attack(target)
+          ship.hasHit += [target]
           if ship.attacksLeft <= 0:
             return
 
