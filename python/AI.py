@@ -5,9 +5,10 @@ from collections import defaultdict
 from math import *
 import random
 
-shipPriorities = defaultdict(lambda: 100)
+shipPriorities = defaultdict(lambda: 10)
 shipPriorities['EMP'] = 1
 shipPriorities['Support'] = 2
+shipPriorities['Weapons Platform'] = 3
 shipPriorities['Warp Gate'] = 1000
 shipPriorities['Mine'] = 9001
 
@@ -23,7 +24,7 @@ class AI(BaseAI):
 
   ##This function is called once, before your first turn
   def init(self):
-    print 'Priority.'
+    print 'Point Juice'
     self.targetList = []
     self.myShips = []
     pass
@@ -61,6 +62,23 @@ class AI(BaseAI):
     kitee = min(self.targetList, key=lambda s: self.distance(kiter.x, kiter.y, s.x, s.y))
     self.flee(kiter, kitee)
 
+  def targetJuice(self, ship, target):
+    return 1000./shipPriorities[target.type]
+  def pointJuice(self, ship, point):
+    targets = [i for i in self.targets(ship, point[0], point[1])]
+    juice = 0
+    if targets:
+      juice += max(self.targetJuice(ship, i) for i in targets)
+
+    gateDistance = self.distance(point[0], point[1], self.theirGate.x, self.theirGate.y)
+    gateDistance -= self.theirGate.radius
+    gateDistance = max(gateDistance, 0)
+
+    juice -= gateDistance/10.
+
+    return juice
+
+
   def spawnShips(self):
     types = sorted(self.shipTypes, key = lambda s: s.damage/s.cost, reverse=True)
     types = [i for i in types if i.type not in ["Support", "EMP", "Mine Layer"] ] #It's complicated
@@ -78,23 +96,44 @@ class AI(BaseAI):
           shipType.warpIn(x,y)
           break
 
-  def controlShips(self):
-    self.targetList.sort(key= lambda s:shipPriorities[s.type])
+  def targets(self, ship, x, y):
+    for i in self.targetList:
+      if self.distance(x, y, i.x, i.y) <= ship.range:
+        yield i
+
+  def moveShips(self):
     for ship in self.myShips:
       #If you own this ship, it can move, and it can attack
       if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
+        t = set(i for i in self.targets(ship, ship.x, ship.y))
         #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
+        points = [(i[0], i[1]) for i in self.genPoints(ship.x, ship.y, ship.movementLeft, 8, 2)]
+        random.shuffle(points)
+        dest = max(points, key=lambda p: self.pointJuice(ship, p))
+        t.update(i for i in self.targets(ship, dest[0], dest[1]))
+
+        targets = sorted(t, key= lambda s:self.targetJuice(ship, s), reverse=True)
+        targets = targets[0:ship.attacksLeft]
+
         ship.hasHit = []
-        self.shootShips(ship)
-        x, y = self.pointOnLine(ship.x, ship.y, self.theirGate.x, self.theirGate.y, ship.movementLeft)
+        self.shootShips(ship, targets)
+        #x, y = self.pointOnLine(ship.x, ship.y, self.theirGate.x, self.theirGate.y, ship.movementLeft)
+        x, y = dest
         #If I have move to get there
-        if ship.x != x or ship.y != y:
+        if ship.type == 'Weapons Platform':
+          self.fleeAll(ship)
+        elif ship.x != x or ship.y != y:
           ship.move(x, y)
         #If the distance from my ship to their warp gate is less than my ships attack range plus their gate's radius
-        self.shootShips(ship)
+        self.shootShips(ship, targets)
       #if a ship should explode, we make sure that it explodes
       if self.shouldExplode(ship):
         ship.selfDestruct()
+
+
+  def controlShips(self):
+    self.moveShips()
+    self.targetList.sort(key= lambda s:shipPriorities[s.type])
     self.fleeAll(self.myGate)
 
 
@@ -113,11 +152,11 @@ class AI(BaseAI):
       return True
     return False
 
-  def shootShips(self, ship):
+  def shootShips(self, ship, targets):
     if ship.attacksLeft <= 0:
       return
     removeList = []
-    for target in self.targetList:
+    for target in targets:
       if target.health > 0 and target not in ship.hasHit and self.distance(ship.x, ship.y, target.x, target.y) <= ship.range + target.radius:
         if ship.attacksLeft > 0:
           ship.attack(target)
@@ -129,17 +168,18 @@ class AI(BaseAI):
     for dead in removeList:
       self.targetList.remove(dead)
 
-  def seizeVictory():
+  def seizeVictory(self):
     explodeTotal = 0
     shootTotal = 0
     for ship in self.myShips:
       if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.radius + ship.movementLeft <= 0:
         explodeTotal += ship.selfDestructDamage
-      if self.distance(ship.x, ship.y, self.theirgate.x, self.theirGate.y) - self.theirGate.radius + ship.range + ship.movementLeft <= 0:
+      if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - self.theirGate.radius - ship.range - ship.movementLeft <= 0:
         shootTotal += ship.damage
 
     if explodeTotal + shootTotal >= self.theirGate.health:
       self.players[self.playerID].talk("Seize Victory!")
+      print "Seize Victory!"
       for ship in self.myShips:
         if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
           #Find a point on the line connecting this ship and their warp gate is close enough for this ship to move to.
@@ -147,8 +187,8 @@ class AI(BaseAI):
           #If I have move to get there
           if ship.x != x or ship.y != y:
             ship.move(x, y)
-          if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) <= ship.range + target.radius:
-            ship.attack(self.theirgate)
+          if self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) <= ship.range + self.theirGate.radius:
+            ship.attack(self.theirGate)
       for ship in self.myShips:
         ship.selfDestruct()
 
