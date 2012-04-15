@@ -3,6 +3,7 @@ from BaseAI import BaseAI
 from GameObject import *
 from collections import defaultdict
 from math import *
+import random
 
 shipPriorities = defaultdict(lambda: 100)
 shipPriorities['EMP'] = 1
@@ -69,8 +70,12 @@ class AI(BaseAI):
       for shipType in types:
         #If you have enough energy to warp in this type of ship
         if shipType.cost <= self.players[self.playerID].energy:
+
+          points = self.genPoints(self.myGate.x, self.myGate.y, self.myGate.radius-shipType.radius, 16, 4)
+          points = [i for i in points]
+          x, y = random.choice(points)
           #Warp it in directly on top of your warp gate
-          shipType.warpIn(self.myGate.x,self.myGate.y)
+          shipType.warpIn(x,y)
           break
 
   def controlShips(self):
