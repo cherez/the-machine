@@ -83,13 +83,15 @@ class AI(BaseAI):
     targets = [i for i in self.targets(ship, point[0], point[1])]
     juice = 0
     if targets:
-      juice += max(self.targetJuice(ship, i) for i in targets)
+      juices = [self.targetJuice(ship, i) for i in targets]
+      juice += sum(juices[0:ship.attacksLeft])
 
     gateDistance = self.distance(point[0], point[1], self.theirGate.x, self.theirGate.y)
     gateDistance -= self.theirGate.radius
     gateDistance = max(gateDistance, 0)
 
-    juice -= gateDistance/10.
+    if not juice:
+      juice -= gateDistance/10.
 
     juice += self.overlapJuice(ship, point)
 
@@ -163,12 +165,12 @@ class AI(BaseAI):
         if target.type == "EMP":
           nobleSacrificeQuotient += 15
         else:
-          if target.health <= self.selfDestructDamage:
+          if target.health <= ship.selfDestructDamage:
             nobleSacrificeQuotient += target.cost
           else:
-            nobleSacrificeQuotient += target.cost * self.selfDestructDamage / target.health
+            nobleSacrificeQuotient += target.cost * ship.selfDestructDamage / target.health
 
-    if nobleSacrificeQuotient > self.cost*2:
+    if nobleSacrificeQuotient > ship.cost*2:
       return True
     return False
 
