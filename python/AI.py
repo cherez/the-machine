@@ -114,6 +114,23 @@ class AI(BaseAI):
           #Warp it in directly on top of your warp gate
           shipType.warpIn(x,y)
           break
+    types = self.shipTypes
+    types = [i for i in self.shipTypes if i.type in ["Support", "EMP", "Mine Layer"] ] #It's complicated
+    types.sort(key = lambda t: t.type[1].upper(), reverse=True)
+    if not types:
+      return
+    cheapest = min(i.cost for i in types)
+    while self.players[self.playerID].energy >= cheapest:
+      for shipType in types:
+        #If you have enough energy to warp in this type of ship
+        if shipType.cost <= self.players[self.playerID].energy:
+
+          points = self.genPoints(self.myGate.x, self.myGate.y, self.myGate.radius-shipType.radius, 16, 4)
+          points = [i for i in points]
+          x, y = random.choice(points)
+          #Warp it in directly on top of your warp gate
+          shipType.warpIn(x,y)
+          break
 
   def targets(self, ship, x, y):
     for i in self.targetList:
@@ -122,6 +139,9 @@ class AI(BaseAI):
 
   def moveShips(self):
     for ship in self.myShips:
+      if ship.type == 'Support':
+        self.fleeAll(ship)
+        continue
       #If you own this ship, it can move, and it can attack
       if ship.owner == self.playerID and ship.movementLeft > 0 and ship.attacksLeft > 0:
         t = set(i for i in self.targets(ship, ship.x, ship.y))
