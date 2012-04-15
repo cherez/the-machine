@@ -179,6 +179,8 @@ class AI(BaseAI):
   def shouldExplode(self, ship):
     if ship.type == 'Battleship' and ship.health > 150:
       return False
+    if ship.type == 'Mine' and self.distance(ship.x, ship.y, self.theirGate.x, self.theirGate.y) - ship.radius - self.theirGate.radius <= 0:
+      return True
     nobleSacrificeQuotient = 0
     for target in self.targetList:
       if target.health > 0 and self.distance(ship.x, ship.y, target.x, target.y) - ship.radius - target.radius <= 0:
