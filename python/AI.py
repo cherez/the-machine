@@ -115,7 +115,7 @@ class AI(BaseAI):
 
   def targets(self, ship, x, y):
     for i in self.targetList:
-      if self.distance(x, y, i.x, i.y) <= ship.range:
+      if self.distance(x, y, i.x, i.y) <= ship.range + i.radius:
         yield i
 
   def moveShips(self):
